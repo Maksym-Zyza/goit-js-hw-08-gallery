@@ -33,7 +33,8 @@ function onImgClick(event) {
   const nextActiveImg = event.target;
 
   setActiveImg(nextActiveImg);
-  getImgUrl(nextActiveImg);
+  //   getImgUrl(nextActiveImg);
+  openModal(nextActiveImg);
 }
 
 function setActiveImg(nextActiveImg) {
@@ -47,11 +48,35 @@ function setActiveImg(nextActiveImg) {
   nextActiveImg.classList.add("js-img--active");
 }
 
-const getImgUrl = (img) =>
-  gallery.find(({ preview, original }) => {
-    if (preview === img.src) {
-      console.log("original - ", original);
-    }
-  });
+// const getImgUrl = (img) =>
+//   gallery.find(({ preview, original }) => {
+//     if (preview === img.src) {
+//       console.log("original - ", original);
+//     }
+//   });
 
 // 3.Открытие модального окна по клику на элементе галереи.
+const modalDiv = document.querySelector(".js-lightbox");
+console.log(modalDiv);
+const butonClose = modalDiv.querySelector('[data-action="close-lightbox"]');
+const openImg = modalDiv.querySelector(".lightbox__image");
+
+function openModal(img) {
+  modalDiv.classList.add("is-open");
+
+  // 4.Подмена значения атрибута src элемента img.lightbox__image.
+  gallery.find(({ preview, original }) => {
+    if (preview === img.src) {
+      openImg.src = original;
+    }
+  });
+}
+
+// 5.Закрытие модального окна по клику на кнопку button[data-action="close-lightbox"].
+butonClose.addEventListener("click", closeModal);
+
+function closeModal() {
+  modalDiv.classList.remove("is-open");
+  // 6.Очистка значения атрибута src элемента img.lightbox__image.
+  openImg.src = "";
+}
