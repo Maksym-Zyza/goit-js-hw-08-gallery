@@ -1,86 +1,119 @@
-import gallery from "./gallery-items.js";
+import images from "./gallery-items.js";
 
-// 1.Создание и рендер разметки по массиву данных и предоставленному шаблону.
 const refs = {
-  galleryList: document.querySelector(".js-gallery"),
-  activeImgOutput: document.querySelector(".js-active-tag"),
+  gallery: document.querySelector(".js-gallery"),
+  lightbox: document.querySelector(".js-lightbox"),
+  lightboxOverlay: document.querySelector(".lightbox__overlay"),
+  lightboxImage: document.querySelector(".lightbox__image"),
+  lightboxCloseBtn: document.querySelector('[data-action="close-lightbox"]'),
 };
 
-function getImgParam({ preview, description, original }) {
-  return `<li class="gallery__item">
-  <a class="gallery__link" href=${original}>
-    <img class="gallery__image" src=${preview} data-source=${original} alt='${description}' />
-  </a>
-  </li>`;
+function createGalleryItem(item) {
+  const galleryItemRef = document.createElement("li");
+  const galleryItemLinkRef = document.createElement("a");
+  const galleryItemLinkImageRef = document.createElement("img");
+
+  galleryItemRef.classList.add("gallery__item");
+
+  galleryItemLinkRef.classList.add("gallery__link");
+  galleryItemLinkRef.href = item.original;
+
+  galleryItemLinkImageRef.classList.add("gallery__image");
+  galleryItemLinkImageRef.src = item.preview;
+  galleryItemLinkImageRef.alt = item.description;
+  galleryItemLinkImageRef.dataset.sourse = item.original;
+  galleryItemLinkImageRef.dataset.index = images.indexOf(item);
+
+  galleryItemLinkRef.appendChild(galleryItemLinkImageRef);
+  galleryItemRef.appendChild(galleryItemLinkRef);
+
+  return galleryItemRef;
 }
 
-function getImg(arr) {
-  const list = `${arr.map((item) => getImgParam(item)).join("")}`;
-  return list;
-}
+const galleryItemArr = images.map((image) => createGalleryItem(image));
 
-refs.galleryList.insertAdjacentHTML("beforeend", getImg(gallery));
-console.log(refs.galleryList);
+refs.gallery.append(...galleryItemArr);
 
-// 2.Реализация делегирования на галерее ul.js-gallery и получение url большого изображения.
-refs.galleryList.addEventListener("click", onImgClick);
+const galleryImagesRefs = document.querySelectorAll(".gallery__image");
+const galleryImagesArr = Array.from(galleryImagesRefs);
 
-function onImgClick(event) {
+refs.gallery.addEventListener("click", handleOnGalleryClick);
+refs.lightboxCloseBtn.addEventListener("click", handleOnLightboxCloseBtnClick);
+refs.lightboxOverlay.addEventListener("click", handleOnLightboxOverlayClick);
+
+function handleOnGalleryClick(event) {
+  event.preventDefault();
+
   if (event.target.nodeName !== "IMG") {
-    console.log("Кликнули не по картинке.");
     return;
   }
 
-  const nextActiveImg = event.target;
-
-  setActiveImg(nextActiveImg);
-  openModal(nextActiveImg);
+  openLightbox(event.target);
 }
 
-function setActiveImg(nextActiveImg) {
-  const currentActiveImg = refs.galleryList.querySelector(".js-img--active");
+function handleOnLightboxCloseBtnClick() {
+  closeLightbox();
+}
 
-  if (currentActiveImg) {
-    currentActiveImg.classList.remove("js-img--active");
+function handleOnLightboxOverlayClick(event) {
+  if (event.target === event.currentTarget) {
+    closeLightbox();
+  }
+}
+
+function handleKeybordKeyPress(event) {
+  let currentIndex = findActiveImageIndex();
+
+  switch (event.code) {
+    case "ArrowRight":
+      currentIndex += 1;
+      break;
+
+    case "ArrowLeft":
+      currentIndex -= 1;
+      break;
+
+    case "Escape":
+      closeLightbox();
+      break;
+
+    default:
   }
 
-  nextActiveImg.classList.add("js-img--active");
+  changeActiveImage(currentIndex);
 }
 
-// 3.Открытие модального окна по клику на элементе галереи.
-const modalDiv = document.querySelector(".js-lightbox");
-console.log(modalDiv);
-const butonClose = modalDiv.querySelector('[data-action="close-lightbox"]');
-const openImg = modalDiv.querySelector(".lightbox__image");
-const overlayDiv = modalDiv.querySelector(".lightbox__overlay");
+function openLightbox(image) {
+  window.addEventListener("keydown", handleKeybordKeyPress);
 
-function openModal(img) {
-  window.addEventListener("keydown", onPressEscape);
-  modalDiv.classList.add("is-open");
-
-  // 4.Подмена значения атрибута src элемента img.lightbox__image.
-  gallery.find(({ preview, original }) => {
-    if (preview === img.src) {
-      openImg.src = original;
-    }
-  });
+  refs.lightbox.classList.add("is-open");
+  refs.lightboxImage.src = image.dataset.sourse;
+  refs.lightboxImage.alt = image.alt;
 }
 
-// 5.Закрытие модального окна по клику на кнопку button[data-action="close-lightbox"].
-// +Закрытие модального окна по клику на div.lightbox__overlay
-// +Закрытие модального окна по нажатию клавиши ESC
-butonClose.addEventListener("click", closeModal);
-overlayDiv.addEventListener("click", closeModal);
+function closeLightbox() {
+  window.removeEventListener("keydown", handleKeybordKeyPress);
 
-function closeModal() {
-  window.removeEventListener("keydown", onPressEscape);
-  modalDiv.classList.remove("is-open");
-  // 6.Очистка значения атрибута src элемента img.lightbox__image.
-  openImg.src = "";
+  refs.lightbox.classList.remove("is-open");
+  refs.lightboxImage.src = "";
+  refs.lightboxImage.alt = "";
 }
 
-function onPressEscape(event) {
-  if (event.code === "Escape") {
-    closeModal();
+function findActiveImageIndex() {
+  const activeImageSourse = refs.lightboxImage.src;
+  const imageToFind = galleryImagesArr.find(
+    (image) => image.dataset.sourse === activeImageSourse
+  );
+  const indexToFind = imageToFind.dataset.index;
+
+  return Number(indexToFind);
+}
+
+function changeActiveImage(index) {
+  if (index >= 0 && index <= galleryImagesArr.length - 1) {
+    const nextImage = document.querySelector(`[data-index="${index}"]`);
+
+    refs.lightboxImage.src = nextImage.dataset.sourse;
+    refs.lightboxImage.alt = nextImage.alt;
   }
 }

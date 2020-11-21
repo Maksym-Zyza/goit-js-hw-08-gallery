@@ -38,7 +38,7 @@ function onImgClick(event) {
 
   setActiveImg(nextActiveImg);
   openModal(nextActiveImg);
-  getNextIndex(nextActiveImg);
+  getIndex(nextActiveImg);
 }
 
 function setActiveImg(nextActiveImg) {
@@ -57,18 +57,22 @@ console.log(modalDiv);
 const butonClose = modalDiv.querySelector('[data-action="close-lightbox"]');
 const openImg = modalDiv.querySelector(".lightbox__image");
 const overlayDiv = modalDiv.querySelector(".lightbox__overlay");
+// const butonPrev = modalDiv.querySelector(".carousel-control-prev-icon");
+// const butonNext = modalDiv.querySelector(".carousel-control-next-icon");
 
 function openModal(img) {
   window.addEventListener("keydown", onPressEscape);
   window.addEventListener("keydown", getNextImg);
   modalDiv.classList.add("is-open");
+  //   butonPrev.addEventListener("click", getNextImg);
+  //   butonNext.addEventListener("click", getNextImg);
 
   // 4.Подмена значения атрибута src элемента img.lightbox__image.
   gallery.find((item, index) => {
     if (item.preview === img.src) {
       openImg.src = item.original;
       activIndex = index;
-      console.log(activIndex);
+      //   console.log(activIndex);
     }
   });
 }
@@ -101,24 +105,29 @@ function onPressEscape(event) {
 // 5) Учесть "0 < activIndex < arr.lenght
 function getNextImg(event) {
   if (event.code === "ArrowRight" || event.code === "ArrowDown") {
+    checkIndex();
     console.log((activIndex += 1));
-    getNextIndex();
+    getIndex();
   }
   if (event.code === "ArrowLeft" || event.code === "ArrowUp") {
+    checkIndex();
     console.log((activIndex -= 1));
-    getNextIndex();
-  }
-  if (activIndex > gallery.length - 1) {
-    activIndex = 0;
-  } else if (activIndex < 1) {
-    activIndex = gallery.length;
+    getIndex();
   }
 }
 
-function getNextIndex() {
+function getIndex() {
   gallery.find((item, index) => {
     if (activIndex === index) {
       openImg.src = item.original;
     }
   });
+}
+
+function checkIndex() {
+  if (activIndex > gallery.length - 1) {
+    activIndex = 0;
+  } else if (activIndex < 1) {
+    activIndex = gallery.length;
+  }
 }

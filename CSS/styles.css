@@ -132,9 +132,32 @@ body {
   background-position: center;
   background-size: 60%;
   background-repeat: no-repeat;
+  opacity: 0.5;
 }
 
 .lightbox__button:hover,
 .lightbox__button:focus {
   background-color: rgba(0, 0, 0, 0.5);
+  opacity: 1;
+}
+
+.carousel-control-prev-icon {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+  opacity: 0.4;
+}
+
+.carousel-control-next-icon {
+  position: absolute;
+  top: 50%;
+  right: 2%;
+  opacity: 0.4;
+}
+
+.carousel-control-prev-icon:hover,
+.carousel-control-prev-icon:focus,
+.carousel-control-next-icon:hover,
+.carousel-control-next-icon:focus {
+  opacity: 1;
 }
